@@ -58,7 +58,7 @@ export default function OmOss() {
           <ClipReveal
             src="https://ventilator.se/wp-content/uploads/sites/2/2021/02/xx-720x480.jpg"
             alt="Ventilator genom åren"
-            className="aspect-[3/2] md:mt-20"
+            className="aspect-[3/2]"
             testId="history-image-2"
           />
         </div>

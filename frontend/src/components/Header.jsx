@@ -10,6 +10,7 @@ const NAV = [
   { to: "/referenser", label: "Referenser" },
   { to: "/nyheter", label: "Nyheter" },
   { to: "/hallbarhet", label: "Hållbarhet" },
+  { to: "/lediga-tjanster", label: "Karriär" },
   { to: "/kontakt", label: "Kontakt" },
 ];
 

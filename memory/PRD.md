@@ -54,3 +54,8 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 - Testat: testing_agent iteration_1 - 25/25 backend, alla frontendfloden PASS
 - Ej i huvudmenyn (medvetet, 7 flikar redan) - kan laggas till pa begaran
 - Vantar: Resend-domanverifiering (Pending) - byt sedan SENDER_EMAIL/CONTACT_RECIPIENT_EMAIL i backend/.env
+
+## 2026-06: Meny + bildjustering
+- "Karriar" tillagd i toppmenyn (lankar till /lediga-tjanster)
+- Staggered bildoffsets (md:mt-20 / lg:mt-24) borttagna pa Hem (spotlight), Om oss (historik) och Tjanster - bildpar ligger nu pa samma hojd
+- OBS: Anvandarens inloggningsproblem kunde INTE reproduceras (login fungerar via API + UI). Vantar pa mer info fran anvandaren.

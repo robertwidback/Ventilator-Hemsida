@@ -197,7 +197,7 @@ export default function Home() {
                 Vi installerar i alla typer av byggnader på både utförande- och totalentreprenad och i samverkansprojekt. Våra erfarna projektledare och montörer säkerställer kvaliteten i alla led.
               </p>
             </Reveal>
-            <Reveal delay={0.15} className="lg:mt-24">
+            <Reveal delay={0.15}>
               <ClipReveal
                 src="https://ventilator.se/wp-content/uploads/sites/2/2021/02/Ventilatorforstasida1024x683-400x267.jpeg"
                 alt="Servicemontörer"
