@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
-import { Loader2, Plus, Pencil, Trash2, LogOut, Eye, EyeOff } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, LogOut, Eye, EyeOff, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "./Nyheter";
@@ -22,6 +22,7 @@ export default function Admin() {
   const [editing, setEditing] = useState(null); // null = list, "new" or post id = form
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [tab, setTab] = useState("news");
 
   const authHeaders = () => ({ headers: { Authorization: `Bearer ${token}` } });
@@ -78,6 +79,25 @@ export default function Admin() {
       published: post.published,
     });
     setEditing(post.id);
+  };
+
+  const uploadImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append("file", file);
+    setUploading(true);
+    try {
+      const res = await axios.post(`${API}/admin/upload`, fd, authHeaders());
+      setForm((f) => ({ ...f, image_url: res.data.url }));
+      toast.success("Bilden är uppladdad!");
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      toast.error(typeof detail === "string" ? detail : "Kunde inte ladda upp bilden.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const save = async (e) => {
@@ -219,8 +239,21 @@ export default function Admin() {
                 <Input id="post-date" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} data-testid="post-date-input" className="h-12 rounded-none border-vent-navy/20 focus-visible:ring-vent-blue" />
               </div>
               <div>
-                <label htmlFor="post-image" className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-vent-navy/60">Bild-URL (valfritt)</label>
-                <Input id="post-image" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} data-testid="post-image-input" className="h-12 rounded-none border-vent-navy/20 focus-visible:ring-vent-blue" placeholder="https://…" />
+                <label htmlFor="post-image" className="mb-2 block font-mono text-xs uppercase tracking-[0.2em] text-vent-navy/60">Bild (valfritt)</label>
+                <div className="flex gap-3">
+                  <Input id="post-image" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} data-testid="post-image-input" className="h-12 rounded-none border-vent-navy/20 focus-visible:ring-vent-blue" placeholder="Klistra in URL eller ladda upp" />
+                  <label
+                    data-testid="post-image-upload-button"
+                    className={`inline-flex h-12 shrink-0 cursor-pointer items-center gap-2 border border-vent-navy/20 px-4 text-sm font-semibold text-vent-navy transition-colors hover:bg-vent-ice ${uploading ? "pointer-events-none opacity-60" : ""}`}
+                  >
+                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    Ladda upp
+                    <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" className="hidden" onChange={uploadImage} data-testid="post-image-file-input" />
+                  </label>
+                </div>
+                {form.image_url && (
+                  <img src={form.image_url} alt="Förhandsvisning" className="mt-3 h-24 w-auto object-cover ring-1 ring-vent-navy/10" data-testid="post-image-preview" />
+                )}
               </div>
             </div>
             <div>

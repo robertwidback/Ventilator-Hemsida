@@ -59,3 +59,11 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 - "Karriar" tillagd i toppmenyn (lankar till /lediga-tjanster)
 - Staggered bildoffsets (md:mt-20 / lg:mt-24) borttagna pa Hem (spotlight), Om oss (historik) och Tjanster - bildpar ligger nu pa samma hojd
 - OBS: Anvandarens inloggningsproblem kunde INTE reproduceras (login fungerar via API + UI). Vantar pa mer info fran anvandaren.
+
+## 2026-06: Bilduppladdning i admin (nyheter) - KLART
+- Emergent object storage integrerat (EMERGENT_LLM_KEY i backend/.env)
+- POST /api/admin/upload (admin, max 8MB, endast bilder) + GET /api/files/{path} (publik, cachas)
+- Adminformular for nyheter har "Ladda upp"-knapp + forhandsvisning; URL-falt kvar
+- Testat: iteration_2 - 32/32 backend, alla frontendfloden PASS
+- Backlog (P2, valfritt): rensa foraldralosa uploads vid borttagen nyhet; storlekskontroll fore buffring
+- OBS: Anvandarens meddelande slutade med "2." - punkt 2 okand, fraga stalld

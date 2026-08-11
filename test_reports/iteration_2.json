@@ -1,0 +1,34 @@
+{
+  "summary": "Tested the new news cover-image upload feature (Emergent object storage) end to end plus regressions. Backend: extended /app/backend/tests/backend_test.py with a TestUploadAndServe class (7 new tests) - 32/32 pytest tests pass. Verified POST /api/admin/upload 401 without/with bogus Bearer token, 400 for a text/plain file (Swedish error message), 201 with a real JPEG and PNG returning {url: '/api/files/ventilator/uploads/<uuid>.<ext>'} with correct extension mapping, GET /api/files/{path} serving publicly with no auth, correct content-type and byte-identical payload, 404 for an unknown path, and news create/GET persisting image_url. Frontend E2E (Playwright, 1920x1080): admin login, news tab, 'Ny nyhet', fill title/preamble/body, set file on the hidden post-image-file-input -> post-image-input got populated with /api/files/... and post-image-preview rendered (naturalWidth 800), saved via post-save-button, post appeared in admin list, visible on public /nyheter with the uploaded cover image rendering (naturalWidth 800 after scroll into view) and on the detail page, then deleted for cleanup. Regressions: edit an existing news post and save without changes works; jobs tab still lists 'Servicetekniker'. No functional defects found.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/admin/upload", "issue": "Whole file is read into memory (await file.read()) before the 8 MB size check, so a much larger request body is still fully buffered. Consider streaming/Content-Length pre-check."},
+      {"endpoint": "POST /api/admin/upload / DELETE /api/admin/news/{id}", "issue": "Orphaned uploads: db.files records (and stored objects) are never removed or marked is_deleted when a news post is deleted or its image_url changed. The is_deleted field is written as False but nothing ever sets it True. Storage will grow unbounded."},
+      {"endpoint": "POST /api/admin/upload", "issue": "Content-type is trusted from the multipart part header only; no magic-byte/extension sniffing, so a non-image renamed with content-type image/png would be stored and later served as an image. Low risk (admin-only endpoint)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Optional: delete/mark is_deleted the stored file when a news post's image is replaced or the post is deleted (currently orphans accumulate)",
+    "Optional: enforce upload size before buffering the whole body"
+  ],
+  "critical_code_review_comments": [
+    "init_storage() mutates a module-level global without a lock; concurrent uploads can race on re-init. Harmless in practice (idempotent), but worth an asyncio lock if traffic grows.",
+    "GET /api/files/{path} fetches the object from remote storage on every request (no local/CDU cache) even though Cache-Control: public, max-age=86400 is returned - fine for browser caching, but each cold hit is a round trip to integrations.emergentagent.com.",
+    "Frontend uploadImage() correctly relies on axios FormData boundary (authHeaders sets only Authorization) and resets e.target.value in finally, so re-selecting the same file works."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "100% (32/32)", "frontend": "100% (all tested flows passed)"},
+  "seed_data_creation": "Created and deleted 2 TEST_ news posts (1 via UI, 1 via API) and 1 TEST_ contact message; removed 4 TEST_ orphan db.files records. Remaining state: 5 original news posts, 1 'Servicetekniker' job, 1 leftover db.files record from the main agent's earlier curl test (original_filename test_upload.jpg) - left intentionally.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "info@ventilator.se / Ventilator2026! - valid, login works",
+  "context_for_next_testing_agent": "Backend regression suite: /app/backend/tests/backend_test.py (32 tests, generates its own JPEG via PIL for upload tests, cleans up its own news/jobs). Contact form sends real email via Resend - one submission per run max. On /nyheter the news grid is 2 columns with the 2nd column offset (md:mt-24), so a card's image and its title are vertically stacked - don't assume the text beside an image belongs to it. Images use framer-motion whileInView; scroll_into_view_if_needed + ~2s wait before checking naturalWidth. page.wait_for_load_state('networkidle') still times out on this app.",
+  "rca_of_the_issue": "No defect. One initial false negative during E2E (naturalWidth=0 for the cover image on /nyheter) was caused by checking too early while the below-the-fold ClipReveal image was still decoding; re-verified as loaded after scrolling into view."
+}

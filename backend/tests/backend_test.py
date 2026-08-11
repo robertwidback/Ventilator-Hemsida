@@ -1,6 +1,8 @@
 """Backend API tests for Ventilator site: jobs (public + admin CRUD), news, auth, contact."""
+import base64
 import os
 import re
+import uuid
 from pathlib import Path
 
 import pytest
@@ -244,6 +246,101 @@ class TestNews:
         assert r.status_code == 200
         assert r.json()["title"] == posts[0]["title"]
         assert api_client.get(f"{BASE_URL}/api/news/bad-id").status_code == 404
+
+
+# --- Image upload / file serving (Emergent object storage) ---
+PNG_BYTES = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=="
+)
+def _make_jpg() -> bytes:
+    from io import BytesIO
+    from PIL import Image
+    buf = BytesIO()
+    Image.new("RGB", (60, 40), (20, 90, 160)).save(buf, format="JPEG")
+    return buf.getvalue()
+
+
+JPG_BYTES = _make_jpg()
+
+
+class TestUploadAndServe:
+    uploaded_paths = []
+
+    def _multipart(self, token, filename, content, ctype):
+        return requests.post(
+            f"{BASE_URL}/api/admin/upload",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"file": (filename, content, ctype)},
+            timeout=120,
+        )
+
+    def test_upload_requires_auth(self):
+        r = requests.post(f"{BASE_URL}/api/admin/upload",
+                          files={"file": ("TEST_x.png", PNG_BYTES, "image/png")}, timeout=60)
+        assert r.status_code == 401, r.text[:200]
+
+    def test_upload_invalid_token(self):
+        r = self._multipart("bogus.token.here", "TEST_x.png", PNG_BYTES, "image/png")
+        assert r.status_code == 401
+
+    def test_upload_rejects_text_file(self, auth_token):
+        r = self._multipart(auth_token, "TEST_note.txt", b"hello world", "text/plain")
+        assert r.status_code == 400, r.text[:200]
+        assert "bild" in r.json()["detail"].lower()
+
+    def test_upload_image_and_public_serve(self, auth_token):
+        r = self._multipart(auth_token, "TEST_cover.jpg", JPG_BYTES, "image/jpeg")
+        assert r.status_code == 201, r.text[:300]
+        url = r.json()["url"]
+        assert url.startswith("/api/files/ventilator/uploads/")
+        assert url.endswith(".jpg")
+        TestUploadAndServe.uploaded_paths.append(url)
+
+        # public GET without auth
+        g = requests.get(f"{BASE_URL}{url}", timeout=60)
+        assert g.status_code == 200, g.text[:200]
+        assert g.headers["content-type"].startswith("image/jpeg")
+        assert g.content == JPG_BYTES
+
+    def test_upload_png_extension(self, auth_token):
+        r = self._multipart(auth_token, "TEST_cover.png", PNG_BYTES, "image/png")
+        assert r.status_code == 201, r.text[:300]
+        url = r.json()["url"]
+        assert url.endswith(".png")
+        TestUploadAndServe.uploaded_paths.append(url)
+        g = requests.get(f"{BASE_URL}{url}", timeout=60)
+        assert g.status_code == 200
+        assert g.headers["content-type"].startswith("image/png")
+
+    def test_serve_unknown_path_404(self):
+        r = requests.get(f"{BASE_URL}/api/files/ventilator/uploads/{uuid.uuid4()}.jpg", timeout=60)
+        assert r.status_code == 404
+
+    def test_news_accepts_uploaded_image_url(self, api_client, admin_headers, auth_token):
+        r = self._multipart(auth_token, "TEST_news.jpg", JPG_BYTES, "image/jpeg")
+        assert r.status_code == 201
+        url = r.json()["url"]
+        TestUploadAndServe.uploaded_paths.append(url)
+        payload = {
+            "title": "TEST_Nyhet med bild",
+            "preamble": "TEST preamble",
+            "body": "TEST body of the news article.",
+            "date": "2026-07-01",
+            "image_url": url,
+            "published": True,
+        }
+        c = api_client.post(f"{BASE_URL}/api/admin/news", headers=admin_headers, json=payload)
+        assert c.status_code == 201, c.text[:300]
+        pid = c.json()["id"]
+        try:
+            assert c.json()["image_url"] == url
+            got = api_client.get(f"{BASE_URL}/api/news/{pid}")
+            assert got.status_code == 200
+            assert got.json()["image_url"] == url
+        finally:
+            d = api_client.delete(f"{BASE_URL}/api/admin/news/{pid}", headers=admin_headers)
+            assert d.status_code in (200, 204)
+            assert api_client.get(f"{BASE_URL}/api/news/{pid}").status_code == 404
 
 
 # --- Contact form (single submission only) ---
