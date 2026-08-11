@@ -1,0 +1,112 @@
+{
+  "theme": "light",
+  "typography": {
+    "headings": {
+      "font_family": "Cabinet Grotesk, sans-serif",
+      "style_instructions": "Use tight letter spacing (tracking-tighter) for H1. Apply a framer-motion masked line-by-line reveal on initial page load."
+    },
+    "body": {
+      "font_family": "Inter, sans-serif",
+      "style_instructions": "Clean, highly readable, tracking-normal. Minimalist approach with generous line heights."
+    },
+    "accent": {
+      "font_family": "JetBrains Mono, monospace",
+      "style_instructions": "Used for numbered manifesto chapters, overlines, and technical metadata."
+    }
+  },
+  "colors": {
+    "primary": "#005087",
+    "secondary": "#0A1F35",
+    "accent": "#00A859",
+    "background_light": "#F8FAFC",
+    "background_dark": "#0B1120",
+    "text_light": "#F1F5F9",
+    "text_dark": "#0F172A",
+    "instructions": "Keep the existing brand essence (blue structure) but modernize it. Transition between stark white minimalist sections and immersive dark navy sections. Strictly follow the 'Tinted Grey' rule."
+  },
+  "visual_enhancers": {
+    "shadows": "Ambient + direct shadows for floating elements, especially on Reference cards.",
+    "textures": "Subtle noise overlay (grain) on dark sections to reduce digital flatness.",
+    "borders": "1px solid strokes with low opacity (border-black/10 or border-white/10).",
+    "glassmorphism": "Used for sticky header. backdrop-blur-xl with border-white/20."
+  },
+  "layouts": {
+    "hero": "Large kinetic typography. Subtle parallax or TSParticles abstract air/flow background element. Masked line-by-line reveal for the H1 on load.",
+    "grid": "Bento-box style for service cards. Asymmetry in text blocks.",
+    "sections": "Numbered manifesto chapters. Slow editorial marquee separating sections. Clipped frames for photography."
+  },
+  "motion": {
+    "scroll": "Lenis smooth scrolling mandatory. Use '@studio-freight/react-lenis'.",
+    "reveal": "Framer Motion scroll-reveals (fade up, subtle scale, and clipped image reveals).",
+    "micro_interactions": "Magnetic buttons, slow hover image scaling inside clipped frames."
+  },
+  "accessibility": {
+    "contrast": "Ensure all text meets WCAG AA standards. Ensure overlays on hero are bg-black/50 or bg-white/40 max.",
+    "motion": "Respect prefers-reduced-motion media query.",
+    "testing": "All interactive elements MUST have data-testid attributes."
+  },
+  "media": {
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1615309662243-70f6df917b59?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjbGVhbiUyMGluZHVzdHJpYWwlMjB2ZW50aWxhdGlvbiUyMGh2YWN8ZW58MHx8fHwxNzg2NDMyODY1fDA&ixlib=rb-4.1.0&q=85",
+        "category": "hero_or_background",
+        "description": "Abstract industrial metal pipe, useful for subtle parallax or dark background."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1724906019868-93ad2c79414f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjBvZmZpY2UlMjBidWlsZGluZyUyMGludGVyaW9yJTIwYnJpZ2h0fGVufDB8fHx8MTc4NjQzMjg2NHww&ixlib=rb-4.1.0&q=85",
+        "category": "services",
+        "description": "Modern corporate building interior to represent environments serviced."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1748027869634-fc2e545cfb0c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNTl8MHwxfHNlYXJjaHw0fHxzd2VkaXNoJTIwZW5naW5lZXIlMjBpbnNwZWN0aW5nJTIwaHZhYyUyMHN5c3RlbXN8ZW58MHx8fHwxNzg2NDMyODY1fDA&ixlib=rb-4.1.0&q=85",
+        "category": "about_or_reference",
+        "description": "Engineer working, real photography for spotlight."
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1635604866833-70844856de75?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwzfHxtb2Rlcm4lMjBjbGVhbiUyMGluZHVzdHJpYWwlMjB2ZW50aWxhdGlvbiUyMGh2YWN8ZW58MHx8fHwxNzg2NDMyODY1fDA&ixlib=rb-4.1.0&q=85",
+        "category": "services",
+        "description": "Building with pipes, representing large scale projects."
+      }
+    ],
+    "3d_libraries": {
+      "recommendation": "Framer Motion or TSParticles",
+      "implementation": "Keep it lightweight. Use Framer Motion for scroll reveals and TSParticles for an abstract flowing air effect in the hero."
+    }
+  },
+  "pages": {
+    "home": "Kinetic hero with large typography, slow marquee separating sections, service showcase grid, numbered manifesto chapters.",
+    "om_oss": "Company history since 1931, Energivärden connection. Real photography.",
+    "tjanster": "Sub-services: Entreprenad, Service, Projektering, Energioptimering, OVK, Renrumssystem.",
+    "referenser": "Reference project cards with image hover scaling.",
+    "hallbarhet": "Agenda 2030 content, clean typography.",
+    "kontakt": "Contact form (email via backend), Address: Lövholmsvägen 9, 100 74 Stockholm, info@ventilator.se, 08-681 14 40. Contact persons: VD Robert Widbäck 070-233 07 55, Servicechef Oscar Bojnäs 076-885 20 30."
+  },
+  "components": {
+    "header": "Glassmorphism sticky header with main navigation links.",
+    "footer": "Massive padding. List sister companies (Styrvärden, Carl Hanssons Rör & Värme, Carls Elektriska). Huge 'Kontakta oss' typography.",
+    "cards": "Cardless or sharp rectangular styles for referenser and services. Minimal borders.",
+    "contact_form": "Shadcn UI forms, customized for a minimalist corporate look."
+  },
+  "instructions_to_main_agent": [
+    "Build the UI in React (.js/.jsx) with Tailwind CSS.",
+    "Use framer-motion for the masked line-by-line text reveal on H1.",
+    "Setup lenis for smooth scrolling.",
+    "Apply 'data-testid' to all interactive elements for testing.",
+    "Implement the 'Tjänster' section as an elegant grid or accordion.",
+    "Create a slow editorial marquee separating key sections.",
+    "Maintain a strict professional tone but with highly dynamic awwwards-level interactions."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Do not use generic centered layouts or simplistic gradients.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition (e.g., transition: all). Add transitions for specific properties.",
+    "You MUST NOT center align the app container in global CSS.",
+    "Always use modern button styles like sharp or pill-shaped with interaction animations.",
+    "NEVER use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯 for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Add subtle grain textures and custom selection states.",
+    "All interactive and key informational elements MUST include a data-testid attribute."
+  ]
+}
