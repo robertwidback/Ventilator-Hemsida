@@ -40,3 +40,8 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 ## 2026-06 (fork): UI-justeringar
 - Menyraden (header) har nu alltid vit bakgrund pa alla sidor; loggan visas direkt utan vit box
 - Rullande marquee-banderollen borttagen fran startsidan (kvar pa Om oss & Hallbarhet)
+
+## 2026-06: E-postutskick aktiverat
+- Resend API-nyckel tillagd i backend/.env; kontaktformular skickar nu mejl (email_sent:true verifierat via curl)
+- OBS: Resend i testlage - mottagare tillfalligt robert.widback@gmail.com tills domanen ventilator.se verifierats i Resend (da byts CONTACT_RECIPIENT_EMAIL till info@ventilator.se och SENDER_EMAIL till egen doman)
+- Kvar: Bygg egen "Lediga tjanster"-sida (lanken pa Kontakt-sidan pekar pa gamla ventilator.se/karriar)
