@@ -14,6 +14,8 @@ import NyhetDetail from "@/pages/NyhetDetail";
 import Admin from "@/pages/Admin";
 import Hallbarhet from "@/pages/Hallbarhet";
 import Kontakt from "@/pages/Kontakt";
+import LedigaTjanster from "@/pages/LedigaTjanster";
+import JobbDetail from "@/pages/JobbDetail";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -54,6 +56,8 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/hallbarhet" element={<Hallbarhet />} />
             <Route path="/kontakt" element={<Kontakt />} />
+            <Route path="/lediga-tjanster" element={<LedigaTjanster />} />
+            <Route path="/lediga-tjanster/:id" element={<JobbDetail />} />
           </Routes>
         </main>
         <Footer />

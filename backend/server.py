@@ -66,6 +66,30 @@ class NewsPost(BaseModel):
     published: bool = True
 
 
+class JobPost(BaseModel):
+    title: str = Field(min_length=3, max_length=200)
+    category: str = Field(default="", max_length=100)
+    location: str = Field(default="Stockholm", max_length=100)
+    employment_type: str = Field(default="Heltid", max_length=100)
+    preamble: str = Field(default="", max_length=600)
+    body: str = Field(min_length=5, max_length=20000)
+    date: str = Field(default_factory=lambda: datetime.now(timezone.utc).date().isoformat())
+    published: bool = True
+
+
+SEED_JOBS = [
+    {
+        "title": "Servicetekniker",
+        "category": "Ventilation",
+        "location": "Stockholm",
+        "employment_type": "Heltid",
+        "preamble": "Vi söker erfarna ventilationstekniker som vill bli en del av vårt serviceteam i Stockholm.",
+        "body": "Vill du ta nästa steg i din karriär? Ventilator söker nu erfarna servicetekniker inom ventilation till vår serviceavdelning i Stockholm.\n\nOm rollen\nSom servicetekniker hos oss arbetar du självständigt med service och underhåll av ventilationsanläggningar hos våra kunder. Arbetet omfattar bland annat ronderingar, filterbyten, felsökning, injustering och mindre ombyggnationer.\n\nVi söker dig som\n- Har flera års erfarenhet av ventilationsservice\n- Arbetar självständigt och tar stort eget ansvar\n- Har god servicekänsla och gillar kundkontakt\n- Har B-körkort\n\nVi erbjuder\n- Ett stabilt företag med anor sedan 1931\n- Kollektivavtal och bra anställningsvillkor\n- Servicebil och moderna arbetsverktyg\n- Stora möjligheter till utveckling inom företaget\n\nAnsök redan idag – urval sker löpande!",
+        "date": "2026-01-15",
+    },
+]
+
+
 SEED_NEWS = [
     {
         "title": "Ny kund, nytt projekt!",
@@ -190,6 +214,68 @@ async def get_news(news_id: str):
     return serialize_post(post)
 
 
+def serialize_job(doc):
+    return {
+        "id": doc["id"],
+        "title": doc["title"],
+        "category": doc.get("category", ""),
+        "location": doc.get("location", ""),
+        "employment_type": doc.get("employment_type", ""),
+        "preamble": doc.get("preamble", ""),
+        "body": doc["body"],
+        "date": doc.get("date", ""),
+        "published": doc.get("published", True),
+        "created_at": doc.get("created_at", ""),
+    }
+
+
+@api_router.get("/jobs")
+async def list_jobs():
+    jobs = await db.jobs.find({"published": True}).sort("date", -1).to_list(200)
+    return [serialize_job(j) for j in jobs]
+
+
+@api_router.get("/jobs/{job_id}")
+async def get_job(job_id: str):
+    job = await db.jobs.find_one({"id": job_id, "published": True})
+    if not job:
+        raise HTTPException(status_code=404, detail="Tjänsten hittades inte")
+    return serialize_job(job)
+
+
+@api_router.get("/admin/jobs")
+async def admin_list_jobs(request: Request):
+    await require_admin(request)
+    jobs = await db.jobs.find().sort("date", -1).to_list(500)
+    return [serialize_job(j) for j in jobs]
+
+
+@api_router.post("/admin/jobs", status_code=201)
+async def admin_create_job(job: JobPost, request: Request):
+    await require_admin(request)
+    doc = {"id": str(uuid.uuid4()), **job.model_dump(), "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.jobs.insert_one(doc)
+    return serialize_job(doc)
+
+
+@api_router.put("/admin/jobs/{job_id}")
+async def admin_update_job(job_id: str, job: JobPost, request: Request):
+    await require_admin(request)
+    result = await db.jobs.update_one({"id": job_id}, {"$set": job.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Tjänsten hittades inte")
+    updated = await db.jobs.find_one({"id": job_id})
+    return serialize_job(updated)
+
+
+@api_router.delete("/admin/jobs/{job_id}", status_code=204)
+async def admin_delete_job(job_id: str, request: Request):
+    await require_admin(request)
+    result = await db.jobs.delete_one({"id": job_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Tjänsten hittades inte")
+
+
 @api_router.get("/admin/news")
 async def admin_list_news(request: Request):
     await require_admin(request)
@@ -253,6 +339,12 @@ async def seed_data():
         await db.news.insert_many([
             {"id": str(uuid.uuid4()), **item, "published": True, "created_at": now}
             for item in SEED_NEWS
+        ])
+    if await db.jobs.count_documents({}) == 0:
+        now = datetime.now(timezone.utc).isoformat()
+        await db.jobs.insert_many([
+            {"id": str(uuid.uuid4()), **item, "published": True, "created_at": now}
+            for item in SEED_JOBS
         ])
 
 

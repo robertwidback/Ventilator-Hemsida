@@ -1,0 +1,39 @@
+{
+  "summary": "Full backend + frontend test of the new 'Lediga tjänster' (careers) feature plus regressions. Backend: 25 pytest tests (auth, admin protection, public jobs, admin jobs CRUD incl. unpublish-hides-from-public, news, contact) - all 25 passed. Frontend (Playwright, 1920x1080): public /lediga-tjanster list + job detail + mailto buttons, kontakt careers-link internal navigation, footer link, admin login + news/jobs tabs + full job create/edit/delete cycle with public visibility check, /nyheter regression, homepage marquee removal, contact form UI submit (POST /api/contact -> 200 {status:success,email_sent:true}). All flows passed. Test data cleaned up: only seeded 'Servicetekniker' job remains, TEST_ contact messages deleted.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/login", "issue": "No brute-force protection / lockout - unlimited failed login attempts allowed (playbook expects lockout after 5 fails). Verified 401 on wrong password but no rate limiting/lockout state."},
+      {"endpoint": "CORS middleware", "issue": "CORS_ORIGINS=\"*\" combined with allow_credentials=True is an invalid combination per the Fetch spec; browsers reject credentialed cross-origin requests with wildcard. Works today only because auth uses a Bearer header, not cookies. Recommend explicit origins."},
+      {"endpoint": "Auth mechanism", "issue": "JWT is returned in the JSON body and stored in localStorage (vent_admin_token) - no httpOnly cookie. Deviates from the auth playbook (httpOnly cookie) and is XSS-exposed. Informational: consistent with existing news admin pattern."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Footer.jsx", "issue": "data-testid is generated as 'footer-link-lediga tjänster' (contains a space and non-ASCII 'ä'); the slug helper only replaces 'å'. Works but is a brittle/inconsistent testid. Suggest explicit slugs.", "selector": "[data-testid=\"footer-link-lediga tjänster\"]", "priority": "LOW"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Header / main nav", "issues": ["'Lediga tjänster' is only reachable from the footer and the /kontakt careers block - it is not in the top navigation (0 header links found). Consider adding it to the primary nav for discoverability."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Optional: add explicit CORS origins instead of \"*\" while allow_credentials=True",
+    "Optional: add login attempt lockout/rate limiting on POST /api/auth/login",
+    "Optional: add 'Lediga tjänster' to top navigation and use ASCII-safe footer data-testids"
+  ],
+  "critical_code_review_comments": [
+    "server.py is ~350 lines and fine now, but news and jobs CRUD are near-identical duplicated blocks (serialize_post/serialize_job, 4 endpoints each) - consider a generic collection router to keep it DRY as more content types are added.",
+    "PUT /api/admin/jobs/{id} does a full $set of the model, so any field omitted by a client silently resets to its default (e.g. location -> 'Stockholm', published -> true). Admin UI always sends all fields so it is safe today; consider a partial-update model.",
+    "MongoDB _id is correctly excluded from all serialized responses (verified in tests)."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "100% (25/25)", "frontend": "100% (all tested flows passed)"},
+  "seed_data_creation": "Created and deleted TEST_Ventilationsmontör (API) and TEST_UI Projektledare (UI) jobs; 2 TEST_ contact messages submitted (1 API, 1 UI) and both deleted from db. Only seeded 'Servicetekniker' job remains; 5 news posts untouched.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "info@ventilator.se / Ventilator2026! (from /app/memory/test_credentials.md) - valid, login works",
+  "context_for_next_testing_agent": "Regression suite lives at /app/backend/tests/backend_test.py (pytest, uses REACT_APP_BACKEND_URL from /app/frontend/.env, cleans up its own jobs). Contact form actually sends email via Resend (email_sent=true) - limit to one submission per run. Jobs collection must keep only 'Servicetekniker'. Note: page.wait_for_load_state('networkidle') times out on this app (WDS websocket) - wait for selectors instead.",
+  "rca_of_the_issue": "No functional defects found. Only hardening/consistency observations listed above."
+}

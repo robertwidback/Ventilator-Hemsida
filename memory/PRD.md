@@ -45,3 +45,12 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 - Resend API-nyckel tillagd i backend/.env; kontaktformular skickar nu mejl (email_sent:true verifierat via curl)
 - OBS: Resend i testlage - mottagare tillfalligt robert.widback@gmail.com tills domanen ventilator.se verifierats i Resend (da byts CONTACT_RECIPIENT_EMAIL till info@ventilator.se och SENDER_EMAIL till egen doman)
 - Kvar: Bygg egen "Lediga tjanster"-sida (lanken pa Kontakt-sidan pekar pa gamla ventilator.se/karriar)
+
+## 2026-06: Lediga tjanster (karriarsida) - KLART
+- Backend: jobs CRUD (/api/jobs publikt, /api/admin/jobs skyddat), seedad annons Servicetekniker
+- Frontend: /lediga-tjanster (lista + spontanansokan), /lediga-tjanster/:id (detalj + ansok via mailto info@ventilator.se)
+- Admin (/admin) har nu flikar: Nyheter + Lediga tjanster (full CRUD)
+- Kontakt-sidans karriarlank pekar nu internt; footer har Lediga tjanster-lank
+- Testat: testing_agent iteration_1 - 25/25 backend, alla frontendfloden PASS
+- Ej i huvudmenyn (medvetet, 7 flikar redan) - kan laggas till pa begaran
+- Vantar: Resend-domanverifiering (Pending) - byt sedan SENDER_EMAIL/CONTACT_RECIPIENT_EMAIL i backend/.env

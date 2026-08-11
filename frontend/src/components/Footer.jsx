@@ -52,12 +52,13 @@ export const Footer = () => (
               ["Referenser", "/referenser"],
               ["Nyheter", "/nyheter"],
               ["Hållbarhet", "/hallbarhet"],
+              ["Lediga tjänster", "/lediga-tjanster"],
               ["Kontakt", "/kontakt"],
             ].map(([label, to]) => (
               <li key={to}>
                 <Link
                   to={to}
-                  data-testid={`footer-link-${label.toLowerCase().replace("å", "a")}`}
+                  data-testid={`footer-link-${to.replace("/", "")}`}
                   className="text-white/80 transition-colors duration-300 hover:text-vent-green"
                 >
                   {label}

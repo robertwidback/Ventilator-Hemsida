@@ -5,6 +5,7 @@ import { Loader2, Plus, Pencil, Trash2, LogOut, Eye, EyeOff } from "lucide-react
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "./Nyheter";
+import { AdminJobs } from "./AdminJobs";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const TOKEN_KEY = "vent_admin_token";
@@ -21,6 +22,7 @@ export default function Admin() {
   const [editing, setEditing] = useState(null); // null = list, "new" or post id = form
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState("news");
 
   const authHeaders = () => ({ headers: { Authorization: `Bearer ${token}` } });
 
@@ -162,11 +164,11 @@ export default function Admin() {
       <div className="mx-auto max-w-5xl px-6 py-16 lg:py-24">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-display text-4xl font-bold tracking-tight text-vent-navy" data-testid="admin-heading">Nyheter</h1>
-            <p className="mt-1 text-sm text-vent-navy/60">Lägg till, ändra eller ta bort nyheter på webbplatsen.</p>
+            <h1 className="font-display text-4xl font-bold tracking-tight text-vent-navy" data-testid="admin-heading">Administration</h1>
+            <p className="mt-1 text-sm text-vent-navy/60">Hantera nyheter och lediga tjänster på webbplatsen.</p>
           </div>
           <div className="flex gap-3">
-            {editing === null && (
+            {tab === "news" && editing === null && (
               <button
                 onClick={startNew}
                 data-testid="admin-new-post-button"
@@ -185,7 +187,24 @@ export default function Admin() {
           </div>
         </div>
 
-        {editing !== null ? (
+        <div className="mt-10 flex gap-2 border-b border-vent-navy/10" data-testid="admin-tabs">
+          {[["news", "Nyheter"], ["jobs", "Lediga tjänster"]].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => { setTab(key); setEditing(null); }}
+              data-testid={`admin-tab-${key}`}
+              className={`border-b-2 px-5 py-3 text-sm font-semibold uppercase tracking-wider transition-colors ${
+                tab === key ? "border-vent-blue text-vent-blue" : "border-transparent text-vent-navy/50 hover:text-vent-navy"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "jobs" ? (
+          <AdminJobs token={token} onAuthFail={logout} />
+        ) : editing !== null ? (
           <form onSubmit={save} className="mt-10 space-y-6 bg-white p-8 shadow-sm ring-1 ring-vent-navy/10 lg:p-12" data-testid="admin-post-form">
             <h2 className="font-display text-2xl font-bold text-vent-navy">
               {editing === "new" ? "Ny nyhet" : "Redigera nyhet"}

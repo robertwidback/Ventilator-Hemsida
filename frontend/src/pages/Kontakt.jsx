@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { ArrowUpRight, Phone, Mail, MapPin, Loader2 } from "lucide-react";
@@ -180,16 +181,14 @@ export default function Kontakt() {
               <div className="grain bg-vent-navy p-10 text-white" data-testid="careers-block">
                 <h2 className="font-display text-2xl font-bold tracking-tight">Vill du bli en av oss?</h2>
                 <p className="mt-3 text-sm text-white/70">Vi letar alltid efter duktiga medarbetare.</p>
-                <a
-                  href="http://ventilator.se/karriar/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/lediga-tjanster"
                   data-testid="careers-link"
                   className="group mt-6 inline-flex items-center gap-2 border border-white/30 px-6 py-3 text-sm font-semibold uppercase tracking-wider transition-colors duration-300 hover:border-vent-green hover:bg-vent-green"
                 >
                   Se lediga tjänster
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
+                </Link>
               </div>
             </Reveal>
           </div>
