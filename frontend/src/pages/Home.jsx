@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, ArrowDown, Wind, Wrench, DraftingCompass, Leaf, ClipboardCheck, Network } from "lucide-react";
 import { Reveal, MaskedLine, ClipReveal } from "@/components/Reveal";
-import { Marquee } from "@/components/Marquee";
 
 const HERO_IMG =
   "https://images.unsplash.com/photo-1615309662243-70f6df917b59?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjbGVhbiUyMGluZHVzdHJpYWwlMjB2ZW50aWxhdGlvbiUyMGh2YWN8ZW58MHx8fHwxNzg2NDMyODY1fDA&ixlib=rb-4.1.0&q=85";
@@ -134,10 +133,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      <Marquee
-        items={["Luftbehandling", "Entreprenad", "Service", "Energioptimering", "Energivärden"]}
-      />
 
       {/* SERVICES BENTO */}
       <section className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-40" data-testid="services-section">

@@ -36,3 +36,7 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 1. Lägg in Resend-nyckel + verifiera domänen ventilator.se för avsändare
 2. Ersätt textlogotyp med kundens logofil
 3. Lägg till karta och ev. fler kontaktpersoner
+
+## 2026-06 (fork): UI-justeringar
+- Menyraden (header) har nu alltid vit bakgrund pa alla sidor; loggan visas direkt utan vit box
+- Rullande marquee-banderollen borttagen fran startsidan (kvar pa Om oss & Hallbarhet)

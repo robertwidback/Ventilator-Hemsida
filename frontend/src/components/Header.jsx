@@ -15,9 +15,7 @@ const NAV = [
 
 const Logo = () => (
   <Link to="/" className="flex items-center" data-testid="header-logo">
-    <span className="inline-flex items-center bg-white px-3 py-2 shadow-sm ring-1 ring-vent-navy/5">
-      <img src="/images/logga.gif" alt="Ventilator – System för luftbehandling" className="h-8 w-auto" />
-    </span>
+    <img src="/images/logga.gif" alt="Ventilator – System för luftbehandling" className="h-9 w-auto" />
   </Link>
 );
 
@@ -35,15 +33,11 @@ export const Header = () => {
 
   useEffect(() => setOpen(false), [pathname]);
 
-  const light = !scrolled && !open && !pathname.startsWith("/admin");
-
   return (
     <header
       data-testid="site-header"
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,border-color] duration-500 ${
-        scrolled || open
-          ? "border-b border-vent-navy/10 bg-white/80 backdrop-blur-xl"
-          : "border-b border-transparent bg-transparent"
+      className={`fixed inset-x-0 top-0 z-50 border-b border-vent-navy/10 bg-white transition-shadow duration-500 ${
+        scrolled ? "shadow-[0_4px_24px_-8px_rgba(10,25,49,0.12)]" : ""
       }`}
     >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
@@ -56,13 +50,7 @@ export const Header = () => {
               data-testid={`nav-${item.label.toLowerCase().replace(" ", "-").replace("å", "a")}`}
               className={({ isActive }) =>
                 `group relative text-sm font-medium tracking-wide transition-colors duration-300 ${
-                  light
-                    ? isActive
-                      ? "text-white"
-                      : "text-white/70 hover:text-white"
-                    : isActive
-                      ? "text-vent-navy"
-                      : "text-vent-navy/60 hover:text-vent-navy"
+                  isActive ? "text-vent-navy" : "text-vent-navy/60 hover:text-vent-navy"
                 }`
               }
             >
@@ -88,7 +76,7 @@ export const Header = () => {
           </Link>
         </nav>
         <button
-          className={`lg:hidden ${light ? "text-white" : "text-vent-navy"}`}
+          className="text-vent-navy lg:hidden"
           onClick={() => setOpen(!open)}
           aria-label="Meny"
           data-testid="mobile-menu-toggle"
