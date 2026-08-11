@@ -76,3 +76,9 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 - Fixat fran testrapport: admin_guard-middleware (401 fore 422 pa /api/admin/*), CORS allow_credentials=False
 - Testat: iteration_3 (46/47 -> efter fix 47/47 pytest), frontend 100%
 - Preview-lank delad med anvandaren
+
+## 2026-06: Scroll-till-toppen fix
+- ScrollToTop anvander nu lenis.scrollTo(0, immediate) + window.scrollTo vid rutt-byte
+- Fixar fallet dar klick under pagaende Lenis-animation gjorde att nya sidan hamnade mitt i
+- Verifierat med Playwright: scrollY=0 bade vid vanlig navigering och klick under scroll
+- OBS: Appen ar DEPLOYAD (https://company-web-301.emergent.host) - anvandaren maste REDEPLOYA for att fa ut nya andringar live

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import "@/App.css";
@@ -17,17 +17,20 @@ import Kontakt from "@/pages/Kontakt";
 import LedigaTjanster from "@/pages/LedigaTjanster";
 import JobbDetail from "@/pages/JobbDetail";
 
-function ScrollToTop() {
+function ScrollToTop({ lenisRef }) {
   const { pathname } = useLocation();
   useEffect(() => {
+    lenisRef.current?.scrollTo(0, { immediate: true, force: true });
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, [pathname]);
+  }, [pathname, lenisRef]);
   return null;
 }
 
 function App() {
+  const lenisRef = useRef(null);
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1 });
+    lenisRef.current = lenis;
     let frame;
     const raf = (time) => {
       lenis.raf(time);
@@ -37,12 +40,13 @@ function App() {
     return () => {
       cancelAnimationFrame(frame);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
   return (
     <BrowserRouter>
-      <ScrollToTop />
+      <ScrollToTop lenisRef={lenisRef} />
       <div className="min-h-screen bg-white">
         <Header />
         <main>
