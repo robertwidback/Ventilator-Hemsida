@@ -23,6 +23,7 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 
 ## Implementerat
 - 2026-08-11: Komplett ny webbplats (6 sidor) med kinetisk hero, parallax, marquee, manifest-kapitel, tjänstelista, referenskort med riktiga projektbilder, hållbarhetssida, kontaktsida med formulär (POST /api/contact → MongoDB + Resend-ready). Lenis smooth scroll, framer-motion reveals, glassmorphism-header, mobilmeny.
+- 2026-08-11: Tog bort allt innehåll om renrum; tjänsten "Renrumssystem" ersatt med "Samordnade installationer".
 
 ## Pågående / backlog
 - **P0:** RESEND_API_KEY saknas – e-postleverans avstängd (meddelanden sparas i DB). Användaren måste skapa nyckel på resend.com och be mig lägga in den, samt bekräfta mottagaradress (nu info@ventilator.se).

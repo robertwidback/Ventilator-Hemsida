@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Wind, Wrench, DraftingCompass, Leaf, ClipboardCheck, Boxes } from "lucide-react";
+import { ArrowUpRight, Wind, Wrench, DraftingCompass, Leaf, ClipboardCheck, Network } from "lucide-react";
 import { Reveal, MaskedLine, ClipReveal } from "@/components/Reveal";
 
 const SERVICES = [
@@ -35,9 +35,9 @@ const SERVICES = [
   },
   {
     n: "06",
-    icon: Boxes,
-    title: "Renrumssystem",
-    text: "Ventilators egna renrumssystem – ett unikt, egenutvecklat modulsystem för renrum med höga krav på luftkvalitet och kontroll.",
+    icon: Network,
+    title: "Samordnade installationer",
+    text: "Tillsammans med systerföretagen i Energivärden genomför vi samordnade entreprenader där vi tar ansvar för samtliga installationer i ert projekt – ett grepp, ett helhetsansvar.",
   },
 ];
 

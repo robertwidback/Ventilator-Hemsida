@@ -78,7 +78,7 @@ export const Footer = () => (
 
       <div className="mt-20 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 font-mono text-xs uppercase tracking-widest text-white/40 sm:flex-row sm:items-center">
         <span data-testid="footer-copyright">© 2026 Ventilator</span>
-        <span>Sedan 1931 — Luftbehandling · Renrum · Laboratorieinredning</span>
+        <span>Sedan 1931 — Luftbehandling · Entreprenad · Service</span>
       </div>
     </div>
   </footer>

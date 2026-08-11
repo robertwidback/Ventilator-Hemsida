@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowUpRight, ArrowDown, Wind, Wrench, DraftingCompass, Leaf, ClipboardCheck, Boxes } from "lucide-react";
+import { ArrowUpRight, ArrowDown, Wind, Wrench, DraftingCompass, Leaf, ClipboardCheck, Network } from "lucide-react";
 import { Reveal, MaskedLine, ClipReveal } from "@/components/Reveal";
 import { Marquee } from "@/components/Marquee";
 
@@ -21,7 +21,7 @@ const SERVICES = [
   { icon: DraftingCompass, title: "Projektering", text: "Experthjälp inom energibesparing, kostnadsuppfattningar och teknisk projektering." },
   { icon: Leaf, title: "Energioptimering", text: "Energibesparing står högt på agendan – vi optimerar din anläggning för klimatet och plånboken." },
   { icon: ClipboardCheck, title: "OVK", text: "Obligatorisk ventilationskontroll som säkerställer ett tillfredsställande inomhusklimat." },
-  { icon: Boxes, title: "Renrumssystem", text: "Ventilators unika modulsystem för renrum – egenutvecklat och beprövat." },
+  { icon: Network, title: "Samordnade installationer", text: "Tillsammans med systerföretagen i Energivärden tar vi ansvar för samtliga installationer i ert projekt." },
 ];
 
 const REFERENCES = [
@@ -136,7 +136,7 @@ export default function Home() {
       </section>
 
       <Marquee
-        items={["Luftbehandling", "Renrum", "Laboratorieinredning", "Skyddsventilation", "Energivärden"]}
+        items={["Luftbehandling", "Entreprenad", "Service", "Energioptimering", "Energivärden"]}
       />
 
       {/* SERVICES BENTO */}
