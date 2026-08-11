@@ -15,7 +15,7 @@ const NAV = [
 
 const Logo = () => (
   <Link to="/" className="flex items-center" data-testid="header-logo">
-    <img src="/images/logga.gif" alt="Ventilator – System för luftbehandling" className="h-9 w-auto" />
+    <img src="/images/logga.gif" alt="Ventilator – System för luftbehandling" className="h-12 w-auto" />
   </Link>
 );
 
