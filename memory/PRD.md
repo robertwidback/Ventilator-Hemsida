@@ -25,6 +25,7 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 - 2026-08-11: Komplett ny webbplats (6 sidor) med kinetisk hero, parallax, marquee, manifest-kapitel, tjänstelista, referenskort med riktiga projektbilder, hållbarhetssida, kontaktsida med formulär (POST /api/contact → MongoDB + Resend-ready). Lenis smooth scroll, framer-motion reveals, glassmorphism-header, mobilmeny.
 - 2026-08-11: Tog bort allt innehåll om renrum; tjänsten "Renrumssystem" ersatt med "Samordnade installationer".
 - 2026-08-11: Kundens logotyp (logga.gif) infogad i sidhuvudet, ersätter textbaserad logotyp.
+- 2026-08-11: Ny flik "Nyheter" (/nyheter + /nyheter/:id) med nyhetsflöde från MongoDB. Adminpanel /admin med JWT-inloggning (info@ventilator.se) för att skapa/redigera/ta bort/publicera nyheter. Fyra befintliga nyheter från gamla ventilator.se seedade.
 
 ## Pågående / backlog
 - **P0:** RESEND_API_KEY saknas – e-postleverans avstängd (meddelanden sparas i DB). Användaren måste skapa nyckel på resend.com och be mig lägga in den, samt bekräfta mottagaradress (nu info@ventilator.se).

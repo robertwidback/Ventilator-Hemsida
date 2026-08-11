@@ -8,6 +8,7 @@ const NAV = [
   { to: "/om-oss", label: "Om oss" },
   { to: "/tjanster", label: "Tjänster" },
   { to: "/referenser", label: "Referenser" },
+  { to: "/nyheter", label: "Nyheter" },
   { to: "/hallbarhet", label: "Hållbarhet" },
   { to: "/kontakt", label: "Kontakt" },
 ];
@@ -34,7 +35,7 @@ export const Header = () => {
 
   useEffect(() => setOpen(false), [pathname]);
 
-  const light = !scrolled && !open;
+  const light = !scrolled && !open && !pathname.startsWith("/admin");
 
   return (
     <header

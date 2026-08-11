@@ -9,6 +9,9 @@ import Home from "@/pages/Home";
 import OmOss from "@/pages/OmOss";
 import Tjanster from "@/pages/Tjanster";
 import Referenser from "@/pages/Referenser";
+import Nyheter from "@/pages/Nyheter";
+import NyhetDetail from "@/pages/NyhetDetail";
+import Admin from "@/pages/Admin";
 import Hallbarhet from "@/pages/Hallbarhet";
 import Kontakt from "@/pages/Kontakt";
 
@@ -46,6 +49,9 @@ function App() {
             <Route path="/om-oss" element={<OmOss />} />
             <Route path="/tjanster" element={<Tjanster />} />
             <Route path="/referenser" element={<Referenser />} />
+            <Route path="/nyheter" element={<Nyheter />} />
+            <Route path="/nyheter/:id" element={<NyhetDetail />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/hallbarhet" element={<Hallbarhet />} />
             <Route path="/kontakt" element={<Kontakt />} />
           </Routes>

@@ -50,6 +50,7 @@ export const Footer = () => (
               ["Om oss", "/om-oss"],
               ["Tjänster", "/tjanster"],
               ["Referenser", "/referenser"],
+              ["Nyheter", "/nyheter"],
               ["Hållbarhet", "/hallbarhet"],
               ["Kontakt", "/kontakt"],
             ].map(([label, to]) => (
@@ -79,6 +80,7 @@ export const Footer = () => (
       <div className="mt-20 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 font-mono text-xs uppercase tracking-widest text-white/40 sm:flex-row sm:items-center">
         <span data-testid="footer-copyright">© 2026 Ventilator</span>
         <span>Sedan 1931 — Luftbehandling · Entreprenad · Service</span>
+        <Link to="/admin" data-testid="footer-admin-link" className="transition-colors hover:text-white/70">Logga in</Link>
       </div>
     </div>
   </footer>
