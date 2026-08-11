@@ -358,3 +358,171 @@ class TestContact:
     def test_contact_validation(self, api_client):
         r = api_client.post(f"{BASE_URL}/api/contact", json={"name": "a", "email": "bad", "message": "x"})
         assert r.status_code == 422
+
+
+# --- Reference projects (public + admin CRUD) ---
+@pytest.fixture(scope="module")
+def created_ref_ids():
+    return []
+
+
+@pytest.fixture(scope="module", autouse=True)
+def cleanup_refs(api_client, created_ref_ids, admin_headers):
+    yield
+    for rid in created_ref_ids:
+        api_client.delete(f"{BASE_URL}/api/admin/references/{rid}", headers=admin_headers)
+
+
+SEED_REF_TITLES = [
+    "Kv. Enzymet, Hagastaden",
+    "Polishögskolan, Södertörn",
+    "IMAX-bio, Mall of Scandinavia",
+    "Hammarbyskolan Södra",
+]
+
+
+class TestPublicReferences:
+    def test_list_references_seed(self, api_client):
+        r = api_client.get(f"{BASE_URL}/api/references")
+        assert r.status_code == 200
+        data = r.json()
+        assert isinstance(data, list) and len(data) >= 4
+        titles = [x["title"] for x in data]
+        for t in SEED_REF_TITLES:
+            assert t in titles, f"missing seeded reference {t}"
+        # seeded order preserved (created_at asc)
+        seed_positions = [titles.index(t) for t in SEED_REF_TITLES]
+        assert seed_positions == sorted(seed_positions), f"seed order wrong: {titles}"
+        for item in data:
+            assert "_id" not in item
+            assert set(["id", "title", "tag", "text", "image_url", "published", "created_at"]) <= set(item.keys())
+            assert item["published"] is True
+            assert isinstance(item["id"], str) and item["id"]
+        # sorted asc by created_at
+        cas = [x["created_at"] for x in data]
+        assert cas == sorted(cas)
+
+
+class TestAdminReferencesAuth:
+    @pytest.mark.parametrize("method,path", [
+        ("get", "/api/admin/references"),
+        ("post", "/api/admin/references"),
+        ("put", "/api/admin/references/xyz"),
+        ("delete", "/api/admin/references/xyz"),
+    ])
+    def test_requires_token(self, api_client, method, path):
+        body = {"title": "TEST_auth", "tag": "", "text": "TEST beskrivning for auth", "published": True}
+        r = getattr(requests, method)(f"{BASE_URL}{path}", json=body)
+        assert r.status_code == 401, f"{method} {path} -> {r.status_code}"
+
+    def test_body_validation_does_not_bypass_auth(self):
+        """Invalid body without token should still be rejected as unauthorized (currently 422)."""
+        r = requests.post(f"{BASE_URL}/api/admin/references", json={})
+        assert r.status_code == 401, f"unauthenticated invalid-body POST returned {r.status_code} instead of 401"
+
+    def test_invalid_token(self, api_client):
+        r = api_client.get(f"{BASE_URL}/api/admin/references", headers={"Authorization": "Bearer bogus.token.x"})
+        assert r.status_code == 401
+
+
+class TestAdminReferencesCRUD:
+    def test_admin_list(self, api_client, admin_headers):
+        r = api_client.get(f"{BASE_URL}/api/admin/references", headers=admin_headers)
+        assert r.status_code == 200
+        assert len(r.json()) >= 4
+
+    def test_create_update_delete_flow(self, api_client, admin_headers, created_ref_ids):
+        payload = {
+            "title": "TEST_Referens Projekt",
+            "tag": "TEST_Kategori",
+            "text": "TEST beskrivning av referensprojektet med tillräcklig längd.",
+            "image_url": "https://example.com/test.jpg",
+            "published": True,
+        }
+        c = api_client.post(f"{BASE_URL}/api/admin/references", json=payload, headers=admin_headers)
+        assert c.status_code == 201, c.text
+        created = c.json()
+        rid = created["id"]
+        created_ref_ids.append(rid)
+        assert created["title"] == payload["title"]
+        assert created["tag"] == payload["tag"]
+        assert created["text"] == payload["text"]
+        assert created["image_url"] == payload["image_url"]
+        assert created["published"] is True
+        assert "_id" not in created
+
+        # visible publicly
+        pub = api_client.get(f"{BASE_URL}/api/references").json()
+        assert rid in [x["id"] for x in pub]
+
+        # UPDATE
+        upd_payload = {**payload, "title": "TEST_Referens Uppdaterad", "tag": "TEST_Ny", "published": False}
+        u = api_client.put(f"{BASE_URL}/api/admin/references/{rid}", json=upd_payload, headers=admin_headers)
+        assert u.status_code == 200, u.text
+        assert u.json()["title"] == "TEST_Referens Uppdaterad"
+        assert u.json()["published"] is False
+
+        # persisted in admin list
+        admin_list = api_client.get(f"{BASE_URL}/api/admin/references", headers=admin_headers).json()
+        row = next(x for x in admin_list if x["id"] == rid)
+        assert row["title"] == "TEST_Referens Uppdaterad"
+        assert row["tag"] == "TEST_Ny"
+        assert row["published"] is False
+
+        # unpublished hidden from public
+        pub2 = api_client.get(f"{BASE_URL}/api/references").json()
+        assert rid not in [x["id"] for x in pub2], "unpublished reference leaked to public list"
+
+        # DELETE
+        d = api_client.delete(f"{BASE_URL}/api/admin/references/{rid}", headers=admin_headers)
+        assert d.status_code in (200, 204)
+        admin_list2 = api_client.get(f"{BASE_URL}/api/admin/references", headers=admin_headers).json()
+        assert rid not in [x["id"] for x in admin_list2]
+        created_ref_ids.remove(rid)
+
+    def test_update_nonexistent_404(self, api_client, admin_headers):
+        r = api_client.put(f"{BASE_URL}/api/admin/references/does-not-exist",
+                           json={"title": "TEST_x", "tag": "", "text": "TEST beskrivning", "published": True},
+                           headers=admin_headers)
+        assert r.status_code == 404
+
+    def test_delete_nonexistent_404(self, api_client, admin_headers):
+        r = api_client.delete(f"{BASE_URL}/api/admin/references/does-not-exist", headers=admin_headers)
+        assert r.status_code == 404
+
+    @pytest.mark.parametrize("bad", [
+        {"title": "T", "text": "TEST beskrivning"},
+        {"title": "TEST_ok", "text": "abc"},
+        {"text": "TEST beskrivning saknar titel"},
+    ])
+    def test_validation(self, api_client, admin_headers, bad):
+        r = api_client.post(f"{BASE_URL}/api/admin/references", json=bad, headers=admin_headers)
+        assert r.status_code == 422, f"expected 422 for {bad}, got {r.status_code}"
+
+    def test_create_with_uploaded_image(self, api_client, admin_headers, auth_token, created_ref_ids):
+        up = requests.post(
+            f"{BASE_URL}/api/admin/upload",
+            headers={"Authorization": f"Bearer {auth_token}"},
+            files={"file": ("ref.jpg", JPG_BYTES, "image/jpeg")},
+            timeout=60,
+        )
+        assert up.status_code in (200, 201), up.text
+        url = up.json()["url"]
+        assert url.startswith("/api/files/")
+        served = requests.get(f"{BASE_URL}{url}", timeout=60)
+        assert served.status_code == 200
+        assert served.headers["Content-Type"].startswith("image/")
+
+        c = api_client.post(f"{BASE_URL}/api/admin/references", json={
+            "title": "TEST_Referens med bild",
+            "tag": "TEST",
+            "text": "TEST beskrivning med uppladdad bild.",
+            "image_url": url,
+            "published": True,
+        }, headers=admin_headers)
+        assert c.status_code == 201, c.text
+        rid = c.json()["id"]
+        created_ref_ids.append(rid)
+        assert c.json()["image_url"] == url
+        pub = api_client.get(f"{BASE_URL}/api/references").json()
+        assert next(x for x in pub if x["id"] == rid)["image_url"] == url

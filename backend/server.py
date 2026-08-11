@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, Request, HTTPException, UploadFile, File
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -127,6 +127,42 @@ class JobPost(BaseModel):
     published: bool = True
 
 
+class ReferenceProject(BaseModel):
+    title: str = Field(min_length=2, max_length=200)
+    tag: str = Field(default="", max_length=100)
+    text: str = Field(min_length=5, max_length=5000)
+    image_url: Optional[str] = Field(default=None, max_length=600)
+    published: bool = True
+
+
+SEED_REFERENCES = [
+    {
+        "title": "Kv. Enzymet, Hagastaden",
+        "tag": "Bostäder",
+        "text": "Ventilator genomförde luftbehandlingsentreprenaden för nybyggnationen Kv. Enzymet. Entreprenaden omfattar 197 lägenheter samt två förskolor.",
+        "image_url": "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Kv-1.-Enzymet.jpg",
+    },
+    {
+        "title": "Polishögskolan, Södertörn",
+        "tag": "Utbildning",
+        "text": "När Polishögskolan flyttade från Solna till Södertörn fick Ventilator uppdraget att installera modern och behovsanpassad ventilation i den renoverade fastigheten Ana 12.",
+        "image_url": "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Polioshuset-720x400.jpg",
+    },
+    {
+        "title": "IMAX-bio, Mall of Scandinavia",
+        "tag": "Kommersiellt",
+        "text": "Ventilator stod för hela luftentreprenaden när Unibail-Rodamco byggde ett toppmodernt biografkomplex med plats för 1800 biofåtöljer i 15 salonger.",
+        "image_url": "https://ventilator.se/wp-content/uploads/sites/2/2021/02/IMAX-720x480.jpg",
+    },
+    {
+        "title": "Hammarbyskolan Södra",
+        "tag": "Skola",
+        "text": "Ventilator genomförde luftbehandlingsentreprenaden när skolan renoverade två av byggnaderna och kunde utöka elevantalet till 625 elever.",
+        "image_url": "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Nytorpskolan_april_2011-720x480.jpg",
+    },
+]
+
+
 SEED_JOBS = [
     {
         "title": "Servicetekniker",
@@ -173,6 +209,19 @@ SEED_NEWS = [
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
+
+
+@app.middleware("http")
+async def admin_guard(request: Request, call_next):
+    if request.url.path.startswith("/api/admin"):
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return JSONResponse(status_code=401, content={"detail": "Inte inloggad"})
+        try:
+            jwt.decode(auth[7:], JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        except jwt.PyJWTError:
+            return JSONResponse(status_code=401, content={"detail": "Ogiltig eller utgången inloggning"})
+    return await call_next(request)
 
 logger = logging.getLogger(__name__)
 
@@ -262,6 +311,57 @@ async def get_news(news_id: str):
     if not post:
         raise HTTPException(status_code=404, detail="Nyheten hittades inte")
     return serialize_post(post)
+
+
+def serialize_reference(doc):
+    return {
+        "id": doc["id"],
+        "title": doc["title"],
+        "tag": doc.get("tag", ""),
+        "text": doc["text"],
+        "image_url": doc.get("image_url"),
+        "published": doc.get("published", True),
+        "created_at": doc.get("created_at", ""),
+    }
+
+
+@api_router.get("/references")
+async def list_references():
+    refs = await db.references.find({"published": True}).sort("created_at", 1).to_list(200)
+    return [serialize_reference(r) for r in refs]
+
+
+@api_router.get("/admin/references")
+async def admin_list_references(request: Request):
+    await require_admin(request)
+    refs = await db.references.find().sort("created_at", 1).to_list(500)
+    return [serialize_reference(r) for r in refs]
+
+
+@api_router.post("/admin/references", status_code=201)
+async def admin_create_reference(ref: ReferenceProject, request: Request):
+    await require_admin(request)
+    doc = {"id": str(uuid.uuid4()), **ref.model_dump(), "created_at": datetime.now(timezone.utc).isoformat()}
+    await db.references.insert_one(doc)
+    return serialize_reference(doc)
+
+
+@api_router.put("/admin/references/{ref_id}")
+async def admin_update_reference(ref_id: str, ref: ReferenceProject, request: Request):
+    await require_admin(request)
+    result = await db.references.update_one({"id": ref_id}, {"$set": ref.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Referensen hittades inte")
+    updated = await db.references.find_one({"id": ref_id})
+    return serialize_reference(updated)
+
+
+@api_router.delete("/admin/references/{ref_id}", status_code=204)
+async def admin_delete_reference(ref_id: str, request: Request):
+    await require_admin(request)
+    result = await db.references.delete_one({"id": ref_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Referensen hittades inte")
 
 
 def serialize_job(doc):
@@ -407,7 +507,7 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
     allow_methods=["*"],
     allow_headers=["*"],
@@ -444,6 +544,12 @@ async def seed_data():
         await db.jobs.insert_many([
             {"id": str(uuid.uuid4()), **item, "published": True, "created_at": now}
             for item in SEED_JOBS
+        ])
+    if await db.references.count_documents({}) == 0:
+        base = datetime.now(timezone.utc)
+        await db.references.insert_many([
+            {"id": str(uuid.uuid4()), **item, "published": True, "created_at": (base + timedelta(seconds=i)).isoformat()}
+            for i, item in enumerate(SEED_REFERENCES)
         ])
 
 

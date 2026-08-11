@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "./Nyheter";
 import { AdminJobs } from "./AdminJobs";
+import { AdminReferences } from "./AdminReferences";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const TOKEN_KEY = "vent_admin_token";
@@ -185,7 +186,7 @@ export default function Admin() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-display text-4xl font-bold tracking-tight text-vent-navy" data-testid="admin-heading">Administration</h1>
-            <p className="mt-1 text-sm text-vent-navy/60">Hantera nyheter och lediga tjänster på webbplatsen.</p>
+            <p className="mt-1 text-sm text-vent-navy/60">Hantera nyheter, lediga tjänster och referensprojekt på webbplatsen.</p>
           </div>
           <div className="flex gap-3">
             {tab === "news" && editing === null && (
@@ -208,7 +209,7 @@ export default function Admin() {
         </div>
 
         <div className="mt-10 flex gap-2 border-b border-vent-navy/10" data-testid="admin-tabs">
-          {[["news", "Nyheter"], ["jobs", "Lediga tjänster"]].map(([key, label]) => (
+          {[["news", "Nyheter"], ["jobs", "Lediga tjänster"], ["references", "Referensprojekt"]].map(([key, label]) => (
             <button
               key={key}
               onClick={() => { setTab(key); setEditing(null); }}
@@ -224,6 +225,8 @@ export default function Admin() {
 
         {tab === "jobs" ? (
           <AdminJobs token={token} onAuthFail={logout} />
+        ) : tab === "references" ? (
+          <AdminReferences token={token} onAuthFail={logout} />
         ) : editing !== null ? (
           <form onSubmit={save} className="mt-10 space-y-6 bg-white p-8 shadow-sm ring-1 ring-vent-navy/10 lg:p-12" data-testid="admin-post-form">
             <h2 className="font-display text-2xl font-bold text-vent-navy">

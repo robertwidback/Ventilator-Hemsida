@@ -1,35 +1,18 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
+import axios from "axios";
+import { ArrowUpRight, Loader2 } from "lucide-react";
 import { Reveal, MaskedLine, ClipReveal } from "@/components/Reveal";
 
-const PROJECTS = [
-  {
-    title: "Kv. Enzymet, Hagastaden",
-    text: "Ventilator genomförde luftbehandlingsentreprenaden för nybyggnationen Kv. Enzymet. Entreprenaden omfattar 197 lägenheter samt två förskolor.",
-    img: "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Kv-1.-Enzymet.jpg",
-    tag: "Bostäder",
-  },
-  {
-    title: "Polishögskolan, Södertörn",
-    text: "När Polishögskolan flyttade från Solna till Södertörn fick Ventilator uppdraget att installera modern och behovsanpassad ventilation i den renoverade fastigheten Ana 12.",
-    img: "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Polioshuset-720x400.jpg",
-    tag: "Utbildning",
-  },
-  {
-    title: "IMAX-bio, Mall of Scandinavia",
-    text: "Ventilator stod för hela luftentreprenaden när Unibail-Rodamco byggde ett toppmodernt biografkomplex med plats för 1800 biofåtöljer i 15 salonger.",
-    img: "https://ventilator.se/wp-content/uploads/sites/2/2021/02/IMAX-720x480.jpg",
-    tag: "Kommersiellt",
-  },
-  {
-    title: "Hammarbyskolan Södra",
-    text: "Ventilator genomförde luftbehandlingsentreprenaden när skolan renoverade två av byggnaderna och kunde utöka elevantalet till 625 elever.",
-    img: "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Nytorpskolan_april_2011-720x480.jpg",
-    tag: "Skola",
-  },
-];
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function Referenser() {
+  const [projects, setProjects] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/references`).then((res) => setProjects(res.data)).catch(() => setProjects([]));
+  }, []);
+
   return (
     <div data-testid="referenser-page">
       {/* HERO */}
@@ -50,22 +33,30 @@ export default function Referenser() {
 
       {/* PROJECTS */}
       <section className="mx-auto max-w-7xl px-6 py-28 lg:px-10 lg:py-40" data-testid="projects-list">
-        <div className="grid gap-x-10 gap-y-24 md:grid-cols-2">
-          {PROJECTS.map((p, i) => (
-            <Reveal key={p.title} delay={(i % 2) * 0.12} className={i % 2 === 1 ? "md:mt-24" : ""}>
-              <article data-testid={`project-card-${i}`}>
-                <ClipReveal src={p.img} alt={p.title} className="aspect-[4/3]" testId={`project-image-${i}`} />
-                <div className="mt-6 flex items-center gap-4">
-                  <span className="font-mono text-xs uppercase tracking-[0.25em] text-vent-blue">{p.tag}</span>
-                  <span className="h-px flex-1 bg-vent-navy/10" />
-                  <span className="font-mono text-xs text-vent-navy/40">0{i + 1}</span>
-                </div>
-                <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-vent-navy sm:text-3xl">{p.title}</h2>
-                <p className="mt-3 text-base leading-relaxed text-vent-navy/70">{p.text}</p>
-              </article>
-            </Reveal>
-          ))}
-        </div>
+        {projects === null ? (
+          <div className="flex justify-center py-20" data-testid="projects-loading">
+            <Loader2 className="h-8 w-8 animate-spin text-vent-blue" />
+          </div>
+        ) : projects.length === 0 ? (
+          <p className="py-20 text-center text-vent-navy/60" data-testid="projects-empty">Inga referensprojekt publicerade ännu.</p>
+        ) : (
+          <div className="grid gap-x-10 gap-y-24 md:grid-cols-2">
+            {projects.map((p, i) => (
+              <Reveal key={p.id} delay={(i % 2) * 0.12} className={i % 2 === 1 ? "md:mt-24" : ""}>
+                <article data-testid={`project-card-${i}`}>
+                  {p.image_url && <ClipReveal src={p.image_url} alt={p.title} className="aspect-[4/3]" testId={`project-image-${i}`} />}
+                  <div className="mt-6 flex items-center gap-4">
+                    <span className="font-mono text-xs uppercase tracking-[0.25em] text-vent-blue">{p.tag}</span>
+                    <span className="h-px flex-1 bg-vent-navy/10" />
+                    <span className="font-mono text-xs text-vent-navy/40">{String(i + 1).padStart(2, "0")}</span>
+                  </div>
+                  <h2 className="mt-4 font-display text-2xl font-bold tracking-tight text-vent-navy sm:text-3xl">{p.title}</h2>
+                  <p className="mt-3 text-base leading-relaxed text-vent-navy/70">{p.text}</p>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        )}
 
         <Reveal className="mt-28 border-t border-vent-navy/10 pt-16 text-center">
           <h2 className="font-display text-3xl font-bold tracking-tight text-vent-navy sm:text-4xl">

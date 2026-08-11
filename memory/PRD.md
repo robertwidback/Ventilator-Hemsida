@@ -67,3 +67,12 @@ Användaren (Ventilator, luftbehandlingsföretag grundat 1931, del av Energivär
 - Testat: iteration_2 - 32/32 backend, alla frontendfloden PASS
 - Backlog (P2, valfritt): rensa foraldralosa uploads vid borttagen nyhet; storlekskontroll fore buffring
 - OBS: Anvandarens meddelande slutade med "2." - punkt 2 okand, fraga stalld
+
+## 2026-06: Referensprojekt-CRUD + nyheter pa startsidan - KLART
+- Backend: references CRUD (/api/references publikt, /api/admin/references skyddat), 4 seedade projekt
+- Admin har tredje flik "Referensprojekt" med bilduppladdning (samma /api/admin/upload)
+- /referenser och startsidans referenssektion hamtar nu fran API
+- Startsidan har ny "Senaste nytt"-sektion (3 senaste nyheterna) fore hallbarhetssektionen
+- Fixat fran testrapport: admin_guard-middleware (401 fore 422 pa /api/admin/*), CORS allow_credentials=False
+- Testat: iteration_3 (46/47 -> efter fix 47/47 pytest), frontend 100%
+- Preview-lank delad med anvandaren

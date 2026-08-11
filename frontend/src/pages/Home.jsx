@@ -1,8 +1,12 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, ArrowDown, Wind, Wrench, DraftingCompass, Leaf, ClipboardCheck, Network } from "lucide-react";
 import { Reveal, MaskedLine, ClipReveal } from "@/components/Reveal";
+import { formatDate } from "./Nyheter";
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const HERO_IMG =
   "https://images.unsplash.com/photo-1615309662243-70f6df917b59?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBjbGVhbiUyMGluZHVzdHJpYWwlMjB2ZW50aWxhdGlvbiUyMGh2YWN8ZW58MHx8fHwxNzg2NDMyODY1fDA&ixlib=rb-4.1.0&q=85";
@@ -23,29 +27,18 @@ const SERVICES = [
   { icon: Network, title: "Samordnade installationer", text: "Tillsammans med systerföretagen i Energivärden tar vi ansvar för samtliga installationer i ert projekt." },
 ];
 
-const REFERENCES = [
-  {
-    title: "Kv. Enzymet, Hagastaden",
-    text: "Luftbehandlingsentreprenaden för nybyggnationen – 197 lägenheter samt två förskolor.",
-    img: "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Kv-1.-Enzymet.jpg",
-  },
-  {
-    title: "Polishögskolan, Södertörn",
-    text: "Modern och behovsanpassad ventilation i den renoverade fastigheten Ana 12.",
-    img: "https://ventilator.se/wp-content/uploads/sites/2/2021/02/Polioshuset-720x400.jpg",
-  },
-  {
-    title: "IMAX-bio, Mall of Scandinavia",
-    text: "Hela luftentreprenaden för ett toppmodernt biografkomplex med 15 salonger.",
-    img: "https://ventilator.se/wp-content/uploads/sites/2/2021/02/IMAX-720x480.jpg",
-  },
-];
-
 export default function Home() {
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "45%"]);
+  const [references, setReferences] = useState([]);
+  const [news, setNews] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${API}/references`).then((res) => setReferences(res.data.slice(0, 3))).catch(() => {});
+    axios.get(`${API}/news`).then((res) => setNews(res.data.slice(0, 3))).catch(() => {});
+  }, []);
 
   return (
     <div data-testid="home-page">
@@ -230,17 +223,55 @@ export default function Home() {
           </Link>
         </Reveal>
         <div className="mt-16 grid gap-10 md:grid-cols-3">
-          {REFERENCES.map((r, i) => (
-            <Reveal key={r.title} delay={i * 0.1}>
+          {references.map((r, i) => (
+            <Reveal key={r.id} delay={i * 0.1}>
               <Link to="/referenser" className="group block" data-testid={`reference-card-${i}`}>
-                <ClipReveal src={r.img} alt={r.title} className="aspect-[4/3]" testId={`reference-image-${i}`} />
+                {r.image_url && <ClipReveal src={r.image_url} alt={r.title} className="aspect-[4/3]" testId={`reference-image-${i}`} />}
                 <h3 className="mt-6 font-display text-xl font-bold tracking-tight text-vent-navy transition-colors duration-300 group-hover:text-vent-blue">
                   {r.title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-vent-navy/60">{r.text}</p>
+                <p className="mt-2 text-sm leading-relaxed text-vent-navy/60 line-clamp-2">{r.text}</p>
               </Link>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      {/* LATEST NEWS */}
+      <section className="border-t border-vent-navy/10 py-28 lg:py-36" data-testid="home-news-section">
+        <div className="mx-auto max-w-7xl px-6 lg:px-10">
+          <Reveal className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.35em] text-vent-blue">Aktuellt</p>
+              <h2 className="mt-6 font-display text-4xl font-bold tracking-tight text-vent-navy sm:text-5xl">Senaste nytt</h2>
+            </div>
+            <Link
+              to="/nyheter"
+              data-testid="home-news-all-link"
+              className="group inline-flex shrink-0 items-center gap-2 border-b-2 border-vent-blue pb-1 font-semibold text-vent-navy transition-colors duration-300 hover:text-vent-blue"
+            >
+              Alla nyheter
+              <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </Reveal>
+          <div className="mt-16 grid gap-10 md:grid-cols-3">
+            {news.map((p, i) => (
+              <Reveal key={p.id} delay={i * 0.1}>
+                <Link to={`/nyheter/${p.id}`} className="group block" data-testid={`home-news-card-${i}`}>
+                  {p.image_url && <ClipReveal src={p.image_url} alt={p.title} className="aspect-[4/3]" testId={`home-news-image-${i}`} />}
+                  <p className="mt-6 font-mono text-xs uppercase tracking-[0.25em] text-vent-blue">{formatDate(p.date)}</p>
+                  <h3 className="mt-3 font-display text-xl font-bold tracking-tight text-vent-navy transition-colors duration-300 group-hover:text-vent-blue">
+                    {p.title}
+                  </h3>
+                  {p.preamble && <p className="mt-2 text-sm leading-relaxed text-vent-navy/60 line-clamp-2">{p.preamble}</p>}
+                  <span className="mt-4 inline-flex items-center gap-2 border-b-2 border-vent-blue pb-1 text-sm font-semibold text-vent-navy transition-colors duration-300 group-hover:text-vent-blue">
+                    Läs mer
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </span>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 

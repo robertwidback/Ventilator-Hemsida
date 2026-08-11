@@ -1,0 +1,33 @@
+{
+  "summary": "Tested new Referensprojekt feature (backend CRUD + admin UI + public page) and homepage 'Senaste nytt'/references sections. Backend: extended /app/backend/tests/backend_test.py with 13 new reference tests (public list, seed order/content, auth protection, full create->public visibility->update->unpublish-hidden->delete flow, 404s, validation, upload+reference integration). 46/47 pytest tests pass. Frontend: verified /referenser (4 cards w/ working images), homepage (3 news cards, date/title/Läs mer, card click -> /nyheter/{id}, 'Alla nyheter' -> /nyheter, 3 reference cards from API), full admin references CRUD incl. image upload (/api/files/... + preview) and news/jobs tab regression. All test data cleaned up; public /api/references back to the 4 seeded projects.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST/PUT /api/admin/references", "issue": "Pydantic body validation runs before require_admin, so an unauthenticated request with an invalid body gets 422 instead of 401 (auth check should precede validation). Same pattern applies to admin news/jobs endpoints. Low risk (no data leak) but wrong status semantics."},
+      {"endpoint": "CORS middleware", "issue": "allow_credentials=True combined with default allow_origins='*' is an invalid CORS combination (browsers reject credentialed wildcard). Set explicit CORS_ORIGINS or drop allow_credentials."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Optional: move require_admin before body parsing (or use a dependency) so unauthenticated admin POST/PUT returns 401 instead of 422",
+    "Optional: fix CORS allow_credentials + wildcard origins combination"
+  ],
+  "critical_code_review_comments": [
+    "serialize_reference correctly strips MongoDB _id; endpoints are all async - no blocking DB calls found.",
+    "Auth playbook items: password hashed with bcrypt at startup ($2b$ verified in existing test), seed_admin updates the hash when ADMIN_PASSWORD changes. This app uses Bearer JWT in the response body (no httpOnly cookie) and has no brute-force lockout - acceptable for this single-admin design but worth noting if the playbook requires cookie sessions + lockout.",
+    "server.py is 546 lines - still under the 700-line threshold but references/news/jobs routers could be split soon."
+  ],
+  "updated_files": ["/app/backend/tests/backend_test.py"],
+  "success_rate": {"backend": "98% (46/47)", "frontend": "100%"},
+  "seed_data_creation": "Created and deleted TEST_ prefixed references via API and UI (TEST_Referens Projekt, TEST_Referens med bild, TEST_UI Referens). One uploaded test PNG remains in object storage (/api/files/ventilator/uploads/*.png) - harmless.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "test_credentials": "info@ventilator.se / Ventilator2026! (worked)",
+  "context_for_next_testing_agent": "backend_test.py now has 47 tests covering auth, jobs, news, uploads, contact validation and references. Only known failure: TestAdminReferencesAuth::test_body_validation_does_not_bypass_auth (422 vs 401, backend design issue). Do not submit the contact form (real email). Use selector waits, not networkidle.",
+  "rca_of_the_issue": "422-before-401: FastAPI resolves the Pydantic body model before the handler body executes require_admin, so validation errors preempt the auth check."
+}
